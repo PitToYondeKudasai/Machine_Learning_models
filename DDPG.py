@@ -1,6 +1,8 @@
 ##########
 ## DDPG ##
 ##########
+# This code implements a simple version of DDPG algorithm
+# presented in the paper "Continuos control with deep reinforcement learning"
 
 import gym
 import mujoco_py
@@ -40,8 +42,12 @@ actor_target = core.Actor(config['state_size'], config['hidden_size'], config['a
 critic_target.load_state_dict(critic.state_dict())
 actor_target.load_state_dict(actor.state_dict())
 
+# We freeze the parameters of the target
+for p in actor_target.parameters():
+    p.requires_grad = False
+
 # We define the loss function and the optimizer
-criterion = torch.nn.MSELoss(reduction = 'sum')
+criterion = torch.nn.MSELoss(reduction = 'mean')
 actor_optimizer = torch.optim.Adam(actor.parameters(), lr = config['actor_learning_rate'])
 critic_optimizer = torch.optim.Adam(critic.parameters(), lr = config['critic_learning_rate'])
 
@@ -120,6 +126,10 @@ while i < config['steps']:
             losses_critic.append(loss_critic.item())
 
             # ------- update actor ------- #
+            # The idea is to compute the mean of the value given by the Critic for the actions taken by the Actor
+            # We try to maximize this quantity
+            # Hence we update the Actor so that it produces actions that get the maximum predicted value as
+            # seen by the Critic for a given state
             q_pi = critic(states,actor(states))
             loss_actor = -q_pi.mean()
             actor_optimizer.zero_grad()
