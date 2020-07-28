@@ -11,7 +11,7 @@ from actor_critic import Actor_Critic
 from torch.optim import Adam
 
 config = dict(
-    env = 'Walker2d-v2',
+    env = 'Pendulum-v0',
     steps_per_epoch = 4000,
     epochs = 50,
     gamma = 0.99,
