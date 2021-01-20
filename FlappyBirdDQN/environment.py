@@ -66,6 +66,9 @@ class Env:
         self.tubes = []
         self.between_tubes = False
         self.render = render
+        self.rew_base = 0.5
+        self.rew_pass_pipe = 10
+        self.rew_game_over = -5
         if self.render:
             self.screen = pygame.display.set_mode((288, 512))
             self.fps = 50
@@ -109,7 +112,7 @@ class Env:
             self.screen.blit(score_render, (144, 0))
 
     def step(self,action):
-        rew = 0.5
+        rew = self.rew_base
         if action == 1:
             self.bird_vel_y = -5
         self.base_x -= self.mov_vel
@@ -130,7 +133,7 @@ class Env:
         for t in self.tubes:
             done = t.collision(self)
             if done:
-                rew = -10
+                rew = self.rew_game_over
                 return obs, rew, done, 'info'
                       
         if not self.between_tubes:
@@ -146,11 +149,11 @@ class Env:
                     break
             if not self.between_tubes:
                 self.scores += 1
-                rew = 5
+                rew = self.rew_pass_pipe
                     
         if self.bird_y > 380:
             done = self.you_lose()
-            rew = -10
+            rew = self.rew_game_over
         return obs, rew, done, 'info'
     
     def has_quit(self):
